@@ -30,8 +30,8 @@ reset). [`curl_cffi`](https://github.com/lexiforest/curl_cffi) impersonates a re
 signature and gets through reliably. Once past that, OLX's own search API
 (`/api/relevance/v4/search`, undocumented but returns clean JSON) gives full descriptions,
 structured parameters (BHK, bathrooms, furnishing, car-parking count), and a photo — the
-richest of the three sources. Its public pagination doesn't work for anonymous requests, so
-each area query is effectively capped at one page (~40 results).
+richest of the four sources for structured fields. Its public pagination doesn't work for
+anonymous requests, so each generic query is effectively capped at one page (~40 results).
 
 **MagicBricks** (`sources/magicbricks.py`) — no anti-bot fight needed at all; a plain
 `requests` call gets a normal 200. The search results page embeds a real JSON blob
