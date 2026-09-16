@@ -17,7 +17,7 @@ those are macOS TCC-protected and block unattended `launchd` jobs from reading/w
 
 ## Sources
 
-All three sources are native Python adapters — no MCP server, no staging file, no browser
+All four sources are native Python adapters — no MCP server, no staging file, no browser
 automation. Each was reverse-engineered and verified against live data.
 
 **NoBroker** (`sources/nobroker.py`) — a plain `requests` call to NoBroker's own public
@@ -40,6 +40,16 @@ property type, furnishing, parking, floor, coordinates, and a photo. Detail-page
 reconstructed from that same JSON field and are best-effort — they occasionally 404 if
 MagicBricks' routing wants session context a plain request doesn't have; the underlying data
 is still reliable.
+
+**CommonFloor** (`sources/commonfloor.py`) — no anti-bot fight at all, and no custom state
+parsing either: listings are embedded as standard `schema.org` JSON-LD
+(`<script type='application/ld+json'>`), the easiest of the four to parse. Gives BHK, rent,
+address/locality, real GPS coordinates (a placeholder-`0.0` pair means the site itself didn't
+have coordinates for that one, not a parsing failure), property type (`Apartment`/`House`
+maps directly to apartment/individual_house), and a genuinely rich free-text description —
+age, furnishing, parking, and floor are parsed out of that description with regexes since the
+structured schema doesn't carry them as separate fields. Pagination has some overlap between
+pages (deduped within the adapter) but is otherwise usable.
 
 **99acres and Housing.com are not integrated.** Both returned outright blocks (403/417/406)
 even with `curl_cffi`'s TLS impersonation — their anti-bot is stronger (likely
@@ -107,8 +117,9 @@ always see what was excluded and why.
 - The veg-only hard filter (`non_veg_allowed`) is keyword-based (`textsignals.py`) against
   title/description text — it catches explicit "vegetarian only" phrasing but can't detect an
   unstated preference the landlord only mentions on a call.
-- Age is unknown for every OLX and MagicBricks listing (neither source exposes a property-age
-  field the way NoBroker does) — the age filter only actively rejects NoBroker listings.
+- Age is unknown for every OLX and MagicBricks listing (neither exposes a property-age field)
+  and only sometimes known for CommonFloor (parsed from free text, not a structured field) —
+  the age filter mostly only actively rejects NoBroker listings.
 - OLX's anonymous search API returns one page (~40 results) per query and doesn't support
   scoping the query text to a locality (adding an area name to the query returns zero results
   — it does near-literal phrase matching, not free-text relevance). `sources/olx.py` runs a

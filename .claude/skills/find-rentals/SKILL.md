@@ -1,14 +1,14 @@
 ---
 name: find-rentals
-description: Run the rent search — fetch new listings from NoBroker, OLX, and MagicBricks, hard-filter, view each listing's photo, score against preferences.md, and produce today's shortlist. Use when the user runs /find-rentals.
+description: Run the rent search — fetch new listings from NoBroker, OLX, MagicBricks, and CommonFloor, hard-filter, view each listing's photo, score against preferences.md, and produce today's shortlist. Use when the user runs /find-rentals.
 ---
 
 # Find Rentals
 
 Run these steps in order, in the project root (`~/rental-skill`).
 
-1. Run `PYTHONPATH=src python3 -m rentsearch.fetch`. This fetches from NoBroker, OLX, and
-   MagicBricks (all native adapters — no MCP server or staging file needed), dedupes, stores
+1. Run `PYTHONPATH=src python3 -m rentsearch.fetch`. This fetches from NoBroker, OLX,
+   MagicBricks, and CommonFloor (all native adapters — no MCP server or staging file needed), dedupes, stores
    everything in `data/rentals.db`, computes each listing's distance to the nearest known
    metro station and its locality's flood notes, and deterministically filters out anything
    that fails the hard constraints (BHK, rent, car parking, property type, age, metro
@@ -24,8 +24,8 @@ Run these steps in order, in the project root (`~/rental-skill`).
 4. For each unscored listing:
    - If it has an `image_url`, download it and actually view it with the Read tool before
      judging `photo_vibe` — don't guess from the title. NoBroker's image host needs a
-     `Referer: https://www.nobroker.in/` header or it 403s; OLX and MagicBricks images don't:
-     `curl -sL -H "Referer: https://www.nobroker.in/" -o /tmp/listing_<id>.jpg "<image_url>"`.
+     `Referer: https://www.nobroker.in/` header or it 403s; OLX, MagicBricks, and CommonFloor
+     images don't: `curl -sL -H "Referer: https://www.nobroker.in/" -o /tmp/listing_<id>.jpg "<image_url>"`.
      If there's no image or the download fails, `photo_vibe` is `UNKNOWN`.
    - Evaluate the listing against `preferences.md` using its stored fields — including
      `metro_distance_km`, `nearest_metro_station`, `flood_notes`, and the photo you just
