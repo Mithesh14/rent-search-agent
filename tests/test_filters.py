@@ -73,3 +73,11 @@ def test_rejects_too_far_from_metro():
 
 def test_unknown_metro_distance_passes_through():
     assert check_filters(_listing(), metro_distance_km=None) is None
+
+
+def test_rejects_veg_only():
+    assert check_filters(_listing(non_veg_allowed=False), metro_distance_km=4.0) == "filtered: veg-only"
+
+
+def test_unknown_veg_preference_passes_through():
+    assert check_filters(_listing(non_veg_allowed=None), metro_distance_km=4.0) is None

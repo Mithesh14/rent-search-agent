@@ -16,10 +16,13 @@ to the `DISCOVERED` state, it already passed all of these:
 - **Age:** under 5 years, or unknown.
 - **Metro distance:** ≤ 6 km from the nearest known metro station (a generous ceiling — the
   real 3–5 km judgment below is more precise and is made per-listing during scoring).
+- **Food preference:** I'm non-vegetarian. Skip any listing that explicitly says the building
+  or society is vegetarian-only / doesn't allow non-veg (`non_veg_allowed = False` in the
+  data). Silence on the topic is normal and fine — most listings say nothing either way.
 
 ## Judgment criteria — evaluate these during scoring, per listing
 
-For each of the four `hard_constraints_json` keys below, mark `PASS`, `FAIL`, or `UNKNOWN`.
+For each of the five `hard_constraints_json` keys below, mark `PASS`, `FAIL`, or `UNKNOWN`.
 Any single `FAIL` forces `decision = SKIP` regardless of score (see `record_score.py`).
 
 1. **`metro_proximity`** — PASS if the listing's stored `metro_distance_km` is within 3–5 km
@@ -47,6 +50,14 @@ Any single `FAIL` forces `decision = SKIP` regardless of score (see `record_scor
    other listings seen in the same run for a similar locality/BHK. This is necessarily
    relative, not absolute — note what you're comparing against in `reasoning_json`.
 
+5. **`photo_vibe`** — actually look at the listing's photo (download `image_url` and view it,
+   don't guess from text). `FAIL` if the photo shows a place that's visibly run-down, dark,
+   cramped, poorly maintained, or otherwise low-appeal — a real example that should FAIL: "2
+   BHK Flat, Wisva, West Saidapet Bus Depot" (dingy, unappealing interior, bus-depot-adjacent).
+   `PASS` if it looks clean, reasonably modern, and well-kept for the price point. `UNKNOWN`
+   only if there's no image at all or it fails to load — don't skip this check just because
+   it's more work than reading text.
+
 ## Decision thresholds
 
 - `SHORTLIST`: score ≥ 80 and no `FAIL` constraints.
@@ -61,9 +72,15 @@ generally. All nine already sit within ~5 km of an existing (not upcoming) metro
 the distance data in `config/areas.yaml`; Adyar is the farthest at ~4.85 km and Kotturpuram at
 ~3.5 km, both still inside the target range.
 
+## Sources
+
+NoBroker, OLX, and MagicBricks are all native adapters (no MCP server or staging file
+needed — see `README.md` for how each one actually reaches its site).
+
 ## What's not built yet (v2)
 
-- 99acres/MagicBricks as additional sources (deferred — stronger anti-bot protection).
+- 99acres and Housing.com (both need a real headless browser — their anti-bot is stronger
+  than a TLS-fingerprint-level block; not worth it for a scheduled unattended job yet).
 - Fetching full listing descriptions from NoBroker's detail pages (the list API only returns
-  a title, not a description) or from OLX's `get_listing_details` tool (currently only
-  `search_listings` results are staged — worth adding for listings that look promising).
+  a title, not a description, which limits `ambience`/`photo_vibe` signal for NoBroker
+  listings specifically to whatever the title and photo show).

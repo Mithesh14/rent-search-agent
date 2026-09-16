@@ -27,4 +27,6 @@ def check_filters(listing: PropertyListing, metro_distance_km: Optional[float]) 
         return "filtered: age-5-plus"
     if metro_distance_km is not None and metro_distance_km > MAX_METRO_DISTANCE_KM:
         return f"filtered: metro-over-{MAX_METRO_DISTANCE_KM}km"
+    if listing.non_veg_allowed is False:
+        return "filtered: veg-only"
     return None

@@ -6,6 +6,7 @@ import requests
 
 from rentsearch.models import PropertyListing
 from rentsearch.sources.base import ListingSource
+from rentsearch.textsignals import detect_veg_only
 
 SEARCH_URL = "https://www.nobroker.in/api/v3/multi/property/RENT/filter"
 SITE_BASE_URL = "https://www.nobroker.in"
@@ -17,6 +18,12 @@ HEADERS = {
 
 PARKING_MAP = {"NONE": "none", "TWO_WHEELER": "bike", "FOUR_WHEELER": "car", "BOTH": "both"}
 BUILDING_TYPE_MAP = {"AP": "apartment", "IH": "individual_house"}
+
+
+def _fix_image_url(raw_url: Optional[str]) -> Optional[str]:
+    if not raw_url:
+        return None
+    return "https:" + raw_url if raw_url.startswith("//") else raw_url
 
 
 def _parse_bhk(type_code: str) -> Optional[int]:
@@ -87,6 +94,8 @@ class NoBrokerSource(ListingSource):
             furnishing=raw.get("furnishingDesc"),
             bathrooms=raw.get("bathroom"),
             description_raw=raw.get("propertyTitle", ""),
+            image_url=_fix_image_url(raw.get("originalImageUrl")),
+            non_veg_allowed=detect_veg_only(raw.get("propertyTitle")),
         )
 
     def fetch(self, config: dict) -> List[PropertyListing]:

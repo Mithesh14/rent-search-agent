@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS listings (
     parking TEXT,
     furnishing TEXT,
     bathrooms INTEGER,
+    image_url TEXT,
     posting_date TEXT,
     date_discovered TEXT NOT NULL,
     description_raw TEXT,
@@ -69,29 +70,31 @@ def upsert_listing(conn, listing_id: str, dedupe_key: str, listing, description_
             """INSERT INTO listings (
                 listing_id, dedupe_key, source, source_id, url, title, locality, address,
                 latitude, longitude, rent, deposit, maintenance, bhk, property_type, age_years,
-                parking, furnishing, bathrooms, posting_date, date_discovered, description_raw,
-                description_hash, metro_distance_km, nearest_metro_station, flood_notes, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DISCOVERED')""",
+                parking, furnishing, bathrooms, image_url, posting_date, date_discovered,
+                description_raw, description_hash, metro_distance_km, nearest_metro_station,
+                flood_notes, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'DISCOVERED')""",
             (
                 listing_id, dedupe_key, listing.source, listing.source_id, listing.url,
                 listing.title, listing.locality, listing.address, listing.latitude,
                 listing.longitude, listing.rent, listing.deposit, listing.maintenance,
                 listing.bhk, listing.property_type, listing.age_years, listing.parking,
-                listing.furnishing, listing.bathrooms, listing.posting_date, date_discovered,
-                listing.description_raw, description_hash, geo_info.get("metro_distance_km"),
-                geo_info.get("nearest_metro_station"), geo_info.get("flood_notes"),
+                listing.furnishing, listing.bathrooms, listing.image_url, listing.posting_date,
+                date_discovered, listing.description_raw, description_hash,
+                geo_info.get("metro_distance_km"), geo_info.get("nearest_metro_station"),
+                geo_info.get("flood_notes"),
             ),
         )
         return "inserted"
     if existing["description_hash"] != description_hash:
         conn.execute(
             """UPDATE listings SET description_raw = ?, description_hash = ?, rent = ?,
-               metro_distance_km = ?, nearest_metro_station = ?, flood_notes = ?,
+               image_url = ?, metro_distance_km = ?, nearest_metro_station = ?, flood_notes = ?,
                match_score = NULL, decision = NULL, hard_constraints_json = NULL,
                reasoning_json = NULL, status = 'DISCOVERED', last_analyzed_at = NULL
                WHERE dedupe_key = ?""",
             (
-                listing.description_raw, description_hash, listing.rent,
+                listing.description_raw, description_hash, listing.rent, listing.image_url,
                 geo_info.get("metro_distance_km"), geo_info.get("nearest_metro_station"),
                 geo_info.get("flood_notes"), dedupe_key,
             ),

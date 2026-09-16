@@ -8,13 +8,14 @@ import yaml
 from rentsearch import db, geo
 from rentsearch.dedupe import compute_dedupe_key, compute_listing_id
 from rentsearch.filters import check_filters
+from rentsearch.sources.magicbricks import MagicBricksSource
 from rentsearch.sources.nobroker import NoBrokerSource
 from rentsearch.sources.olx import OlxSource
 
 DB_PATH = "data/rentals.db"
 CONFIG_PATH = "config/areas.yaml"
 
-DEFAULT_SOURCES = [NoBrokerSource(), OlxSource()]
+DEFAULT_SOURCES = [NoBrokerSource(), OlxSource(), MagicBricksSource()]
 
 
 def load_config(path: str = CONFIG_PATH) -> dict:

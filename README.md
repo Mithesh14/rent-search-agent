@@ -1,9 +1,9 @@
 # Rent Search Agent (v1: search + analysis, no contacting owners)
 
 Finds 2BHK+ rentals under ₹25k/month across nine target Chennai localities, scores them
-against `preferences.md` (metro proximity, flood history, ambience, value for money), and
-produces a shortlist. Never contacts a landlord/broker automatically — this only searches
-and analyzes.
+against `preferences.md` (metro proximity, flood history, ambience, photo vibe, value for
+money), and produces a shortlist. Never contacts a landlord/broker automatically — this only
+searches and analyzes.
 
 Sibling project to `../Job agent`, same architecture (fetch → dedupe → hard-filter → Claude
 scores against a preferences doc → record → report).
@@ -17,26 +17,36 @@ scores against a preferences doc → record → report).
 
 ## Sources
 
-**NoBroker** works out of the box — it's a plain `requests` call to NoBroker's own public
-search API (`src/rentsearch/sources/nobroker.py`), reverse-engineered and verified against
-live data. It returns exact rent, BHK, deposit, age, parking, and GPS coordinates per
-listing, one query per target area in `config/areas.yaml`.
+All three sources are native Python adapters — no MCP server, no staging file, no browser
+automation. Each was reverse-engineered and verified against live data.
 
-**OLX** cannot be scraped directly from this project — OLX actively blocks non-browser HTTP
-clients (confirmed: even a plain `curl` with a full browser User-Agent gets its connection
-reset). Instead, `src/rentsearch/sources/olx.py` reads `data/olx_staging.json`, which the
-`/find-rentals` skill populates by calling the [OLX India MCP
-server](https://github.com/Automate-with-Sanjay/OLX_INDIA_MCP_SERVER)'s `search_listings`
-tool directly (Claude Code tool access runs from your machine's own network, not this
-sandbox, so it has a much better chance of getting through). To enable it:
+**NoBroker** (`sources/nobroker.py`) — a plain `requests` call to NoBroker's own public
+search API. Returns exact rent, BHK, deposit, age, parking, and GPS coordinates per listing,
+one query per target area. Only gives a title, not a full description.
 
-    git clone https://github.com/Automate-with-Sanjay/OLX_INDIA_MCP_SERVER.git
-    cd OLX_INDIA_MCP_SERVER
-    npm install && npm run build
+**OLX** (`sources/olx.py`) — OLX fingerprints the TLS handshake and blocks plain
+`requests`/`curl` outright (confirmed: even a full browser User-Agent gets the connection
+reset). [`curl_cffi`](https://github.com/lexiforest/curl_cffi) impersonates a real Chrome TLS
+signature and gets through reliably. Once past that, OLX's own search API
+(`/api/relevance/v4/search`, undocumented but returns clean JSON) gives full descriptions,
+structured parameters (BHK, bathrooms, furnishing, car-parking count), and a photo — the
+richest of the three sources. Its public pagination doesn't work for anonymous requests, so
+each area query is effectively capped at one page (~40 results).
 
-Then add it to Claude Code as an MCP server (check that repo's README for the exact
-`claude mcp add` invocation against the built `index.js`). If it isn't configured, the skill
-skips OLX for that run and says so — NoBroker alone still produces a useful report.
+**MagicBricks** (`sources/magicbricks.py`) — no anti-bot fight needed at all; a plain
+`requests` call gets a normal 200. The search results page embeds a real JSON blob
+(`window.SERVER_PRELOADED_STATE_`) with rent, BHK (parsed from the listing's URL slug),
+property type, furnishing, parking, floor, coordinates, and a photo. Detail-page URLs are
+reconstructed from that same JSON field and are best-effort — they occasionally 404 if
+MagicBricks' routing wants session context a plain request doesn't have; the underlying data
+is still reliable.
+
+**99acres and Housing.com are not integrated.** Both returned outright blocks (403/417/406)
+even with `curl_cffi`'s TLS impersonation — their anti-bot is stronger (likely
+behavioral/Akamai-managed-challenge, not just a TLS fingerprint check) and every working
+public scraper for them uses a real headless browser (Playwright/Selenium). Not worth the
+added fragility for a background job; revisit only if the three current sources stop being
+enough.
 
 ## Keep `preferences.md` and `config/areas.yaml` current
 
@@ -51,9 +61,9 @@ In Claude Code, from this directory:
 
     /find-rentals
 
-This fetches new listings, hard-filters by BHK/rent/parking/type/age/metro-distance, has
-Claude score every genuinely new listing against `preferences.md`, and writes
-`reports/<today>.md`.
+This fetches new listings, hard-filters by BHK/rent/car-parking/type/age/metro-distance/
+veg-only, has Claude view each surviving listing's photo and score it against
+`preferences.md`, and writes `reports/<today>.md` plus an updated Artifact dashboard.
 
 ## Run tests
 
@@ -68,18 +78,25 @@ always see what was excluded and why.
 ## Limitations
 
 - NoBroker's search API only returns a listing title, not a full description — flood/ambience
-  signal for NoBroker listings comes mostly from `config/areas.yaml`'s locality-level notes,
-  not the listing text itself.
+  signal for NoBroker listings comes mostly from `config/areas.yaml`'s locality-level notes
+  and the photo, not listing text.
 - Flood-history notes in `config/areas.yaml` are manually researched from Dec 2015 and Dec
   2023 (Cyclone Michaung) news coverage, not a live flood-data API. "No specific reports
   found" for a locality means exactly that — it is not a safety guarantee.
-- 99acres and MagicBricks are not integrated (deferred — stronger anti-bot protection than
-  NoBroker; revisit if NoBroker + OLX aren't producing enough coverage).
-- OLX listings staged via the MCP server carry only title/description/price/location — BHK,
-  property type, age, and parking for OLX listings depend on the skill extracting them from
-  free text, and will often come through as `unknown` rather than a hard filter rejection.
+- 99acres and Housing.com are not integrated — see Sources above.
+- The veg-only hard filter (`non_veg_allowed`) is keyword-based (`textsignals.py`) against
+  title/description text — it catches explicit "vegetarian only" phrasing but can't detect an
+  unstated preference the landlord only mentions on a call.
+- Age is unknown for every OLX and MagicBricks listing (neither source exposes a property-age
+  field the way NoBroker does) — the age filter only actively rejects NoBroker listings.
+- OLX's anonymous search API returns one page (~40 results) per area query — no working
+  pagination without a logged-in session.
+- MagicBricks detail-page links are reconstructed from data the site embeds for that purpose
+  and are usually correct, but can occasionally 404.
 
 ## Privacy
 
-`data/rentals.db` and any staged OLX data are local-only; don't push this repo to a public
-remote without checking `data/` and `reports/` are excluded (they're gitignored by default).
+This repo is public (`config/areas.yaml`, `preferences.md`, and all source code) — it
+contains rental preferences (budget, target areas) but no credentials or account data.
+`data/rentals.db` and `reports/` are local-only and gitignored; double-check that stays true
+before adding anything else to the repo.

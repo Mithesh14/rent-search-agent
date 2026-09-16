@@ -25,6 +25,8 @@ class PropertyListing:
     bathrooms: Optional[int] = None
     description_raw: str = ""
     posting_date: Optional[str] = None
+    image_url: Optional[str] = None
+    non_veg_allowed: Optional[bool] = None
 
     def description_hash(self) -> str:
         normalized = re.sub(r"\s+", " ", self.description_raw or "").strip().lower()

@@ -7,7 +7,7 @@ from rentsearch import db
 DB_PATH = "data/rentals.db"
 VALID_DECISIONS = {"SHORTLIST", "CONSIDER", "SKIP"}
 VALID_CONSTRAINT_VALUES = {"PASS", "FAIL", "UNKNOWN"}
-REQUIRED_CONSTRAINT_KEYS = {"metro_proximity", "flood_risk", "ambience", "value_for_money"}
+REQUIRED_CONSTRAINT_KEYS = {"metro_proximity", "flood_risk", "ambience", "value_for_money", "photo_vibe"}
 REQUIRED_REASONING_KEYS = {"strong_points", "concerns", "flood_context", "why_not_shortlist"}
 
 
