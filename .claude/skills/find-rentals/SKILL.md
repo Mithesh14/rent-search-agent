@@ -55,15 +55,20 @@ Run these steps in order, in the project root (`~/rental-skill`).
    filtered-out-counts-by-reason section. Include the run timestamp and which sources
    contributed. Load the `artifact-design` skill before writing it.
 
-   Before publishing, call `Artifact` with `action: "list"`, `scope: "mine"` and look for a
-   previously published artifact titled `chennai_rent_search`. If found, read it with
-   `action: "read"` first, then republish to that same `url` so this stays one
-   continuously-updated dashboard instead of a new link every run. If none exists yet,
-   publish a new one with title `chennai_rent_search` and a house-emoji favicon.
+   **Always write this HTML to `reports/dashboard.html` first** (plain `Write` tool, always
+   works) — this is the reliable deliverable, especially for a headless/unattended run.
+
+   Then, best-effort, also try to publish/update it as an Artifact: call `Artifact` with
+   `action: "list"`, `scope: "mine"` and look for a previously published artifact titled
+   `chennai_rent_search`; if found, read it with `action: "read"` first, then republish to
+   that same `url`; if none exists, publish a new one with that title and a house-emoji
+   favicon. The Artifact tool has been observed to silently not publish anything from a
+   headless `claude -p` session (no error, just nothing shows up in a later `Artifact list`)
+   — if that happens, that's fine, `reports/dashboard.html` already has the real output.
 
 7. Show the full report to the user in chat, leading with the Shortlist section, and give them
-   the artifact link. (If running headless/unattended with no one to show chat output to, the
-   artifact URL is the durable output — make sure step 6 actually completed and was not skipped.)
+   the artifact link if it published. (If running headless with no one to show chat output
+   to, `reports/dashboard.html` is the durable output — confirm it was actually written.)
 
 Never contact a landlord, broker, or seller, and never submit any inquiry or application as
 part of this command — this skill only searches and analyzes.

@@ -86,18 +86,23 @@ Two `launchd` agents (`~/Library/LaunchAgents/com.mithesh.rent-search-{morning,a
 `claude -p` headlessly against the `/find-rentals` skill in this directory. Logs land in
 `logs/` (gitignored).
 
-**Known limitation, unresolved:** a `claude -p` invocation triggered directly from the
-terminal (or via `launchctl start ... ` foreground testing) works and completes normally, but
-the same command fired by `launchd`'s scheduler produces zero output and exits quickly. This
-machine runs Sophos endpoint security, which was observed (via `log show`) actively
-inspecting and in at least one case rejecting a network flow from the `claude` process —
-plausibly the cause, though not confirmed. This is enterprise security software behavior, not
-something to work around from inside this project. If unattended runs matter, check with IT
-about Sophos's policy for background-launched processes; otherwise run `/find-rentals`
-manually when you want a fresh search — that path is fully working.
+**Update:** an earlier version of this doc suspected Sophos endpoint security was silently
+killing `launchd`-triggered `claude -p` runs (based on `log show` evidence of Sophos
+inspecting the process). That diagnosis was wrong, or at least incomplete — a scheduled
+9AM run was confirmed to complete successfully end-to-end (fetched all 4 sources, viewed
+photos, scored 30 listings). It just took ~25 minutes, longer than earlier test-and-check
+windows allowed for.
+
+**Known limitation, actually confirmed:** the Artifact publish/update step doesn't reliably
+work from a headless `claude -p` session — after that successful run, `Artifact list` showed
+no new/updated dashboard, but the skill had still written the full dashboard HTML to
+`reports/dashboard.html` locally as it built it. Likely the `Artifact` tool needs the
+interactive app's rendering surface, which a bare `-p` CLI process doesn't have. Until that's
+resolved, treat `reports/dashboard.html` (open it directly in a browser) as the real
+scheduled-run output, not the claude.ai artifact link.
 
 To check whether a scheduled run actually produced anything: `cat logs/morning.log` (or
-`afternoon.log`) after 9AM/5PM, or check the Artifact dashboard's last-updated time.
+`afternoon.log`), or just open `reports/dashboard.html` and check its timestamp.
 
 ## Data
 
