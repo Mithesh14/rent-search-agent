@@ -5,7 +5,7 @@ description: Run the rent search — fetch new listings from NoBroker, OLX, and 
 
 # Find Rentals
 
-Run these steps in order, in the project root (the `Rent agent` directory).
+Run these steps in order, in the project root (`~/rental-skill`).
 
 1. Run `PYTHONPATH=src python3 -m rentsearch.fetch`. This fetches from NoBroker, OLX, and
    MagicBricks (all native adapters — no MCP server or staging file needed), dedupes, stores

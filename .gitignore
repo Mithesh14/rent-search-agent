@@ -4,3 +4,5 @@ reports/
 __pycache__/
 *.pyc
 graphify-out/
+logs/
+.pytest_cache/

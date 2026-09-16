@@ -5,12 +5,12 @@ against `preferences.md` (metro proximity, flood history, ambience, photo vibe, 
 money), and produces a shortlist. Never contacts a landlord/broker automatically — this only
 searches and analyzes.
 
-Sibling project to `../Job agent`, same architecture (fetch → dedupe → hard-filter → Claude
-scores against a preferences doc → record → report).
+Lives at `~/rental-skill` (deliberately outside `~/Desktop`/`~/Documents`/`~/Downloads` —
+those are macOS TCC-protected and block unattended `launchd` jobs from reading/writing here).
 
 ## Setup
 
-    cd "Rent agent"
+    cd ~/rental-skill
     python3 -m venv .venv
     source .venv/bin/activate
     pip install -r requirements.txt
@@ -69,6 +69,26 @@ veg-only, has Claude view each surviving listing's photo and score it against
 
     PYTHONPATH=src pytest tests/ -v
 
+## Scheduled runs (launchd)
+
+Two `launchd` agents (`~/Library/LaunchAgents/com.mithesh.rent-search-{morning,afternoon}.plist`,
+9AM/5PM daily) run `scripts/run-find-rentals.sh`, which activates the venv and invokes
+`claude -p` headlessly against the `/find-rentals` skill in this directory. Logs land in
+`logs/` (gitignored).
+
+**Known limitation, unresolved:** a `claude -p` invocation triggered directly from the
+terminal (or via `launchctl start ... ` foreground testing) works and completes normally, but
+the same command fired by `launchd`'s scheduler produces zero output and exits quickly. This
+machine runs Sophos endpoint security, which was observed (via `log show`) actively
+inspecting and in at least one case rejecting a network flow from the `claude` process —
+plausibly the cause, though not confirmed. This is enterprise security software behavior, not
+something to work around from inside this project. If unattended runs matter, check with IT
+about Sophos's policy for background-launched processes; otherwise run `/find-rentals`
+manually when you want a fresh search — that path is fully working.
+
+To check whether a scheduled run actually produced anything: `cat logs/morning.log` (or
+`afternoon.log`) after 9AM/5PM, or check the Artifact dashboard's last-updated time.
+
 ## Data
 
 `data/rentals.db` (SQLite, gitignored) holds every listing ever seen and its status
@@ -89,8 +109,10 @@ always see what was excluded and why.
   unstated preference the landlord only mentions on a call.
 - Age is unknown for every OLX and MagicBricks listing (neither source exposes a property-age
   field the way NoBroker does) — the age filter only actively rejects NoBroker listings.
-- OLX's anonymous search API returns one page (~40 results) per area query — no working
-  pagination without a logged-in session.
+- OLX's anonymous search API returns one page (~40 results) per query and doesn't support
+  scoping the query text to a locality (adding an area name to the query returns zero results
+  — it does near-literal phrase matching, not free-text relevance). `sources/olx.py` runs a
+  few generic city-wide queries instead and tags locality from the response afterwards.
 - MagicBricks detail-page links are reconstructed from data the site embeds for that purpose
   and are usually correct, but can occasionally 404.
 
