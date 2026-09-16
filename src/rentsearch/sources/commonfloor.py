@@ -31,6 +31,14 @@ def _parse_bathrooms(description: str) -> Optional[int]:
     return int(match.group(1)) if match else None
 
 
+def _parse_number_of_rooms(value: Optional[str]) -> Optional[int]:
+    if not value:
+        return None
+    # CommonFloor sometimes reports this as "4+" (4 or more BHK) instead of a plain number.
+    match = re.match(r"(\d+)", str(value))
+    return int(match.group(1)) if match else None
+
+
 def _parse_furnishing(description: str) -> Optional[str]:
     text = description.lower()
     if "unfurnished" in text:
@@ -117,7 +125,7 @@ class CommonFloorSource(ListingSource):
             rent=int(offers.get("price") or 0),
             deposit=None,
             maintenance=None,
-            bhk=int(float(raw.get("numberOfRooms"))) if raw.get("numberOfRooms") else None,
+            bhk=_parse_number_of_rooms(raw.get("numberOfRooms")),
             property_type=_parse_property_type(raw.get("@type")),
             age_years=_parse_age_years(description),
             parking=_parse_parking(description),

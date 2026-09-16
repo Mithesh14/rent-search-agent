@@ -29,6 +29,12 @@ BATHROOMS_RE = re.compile(r"(\d+)[\s-]*bathrooms?", re.IGNORECASE)
 AGE_RE = re.compile(r"(\d+)\s*years?\s*old", re.IGNORECASE)
 
 
+def _safe_leading_int(value) -> Optional[int]:
+    # Structured numeric fields have been seen as e.g. "4+" (4 or more), not a plain number.
+    match = re.match(r"(\d+)", str(value)) if value is not None else None
+    return int(match.group(1)) if match else None
+
+
 def _parse_bhk_from_text(text: str) -> Optional[int]:
     match = BHK_RE.search(text)
     return int(float(match.group(1))) if match else None
@@ -127,8 +133,8 @@ class SquareYardsSource(ListingSource):
         property_type = "unknown"
         image_url = action.get("image")
         if matched_property:
-            bhk = int(float(matched_property["numberOfRooms"])) if matched_property.get("numberOfRooms") else None
-            bathrooms = int(matched_property["numberOfBathroomsTotal"]) if matched_property.get("numberOfBathroomsTotal") else None
+            bhk = _safe_leading_int(matched_property.get("numberOfRooms"))
+            bathrooms = _safe_leading_int(matched_property.get("numberOfBathroomsTotal"))
             property_type = TYPE_MAP.get(matched_property.get("@type"), "unknown")
             image_url = matched_property.get("image") or image_url
         if bhk is None:

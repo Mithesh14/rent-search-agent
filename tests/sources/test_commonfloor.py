@@ -114,3 +114,12 @@ def test_missing_bhk_field_is_none():
     with patch("rentsearch.sources.commonfloor.requests.get", return_value=FakeResponse(_html_with_blocks([item]))):
         listings = source.fetch({"commonfloor_max_pages": 1})
     assert listings[0].bhk is None
+
+
+def test_numberofrooms_plus_suffix_parsed():
+    # CommonFloor reports this as "4+" (4 or more BHK) for some listings, seen live.
+    source = CommonFloorSource()
+    item = {**FIXTURE_LD_JSON, "numberOfRooms": "4+"}
+    with patch("rentsearch.sources.commonfloor.requests.get", return_value=FakeResponse(_html_with_blocks([item]))):
+        listings = source.fetch({"commonfloor_max_pages": 1})
+    assert listings[0].bhk == 4
