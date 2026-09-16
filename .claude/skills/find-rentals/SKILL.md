@@ -60,7 +60,21 @@ Run these steps in order, in the project root (the `Rent agent` directory).
 6. Once every unscored listing is recorded, run `PYTHONPATH=src python3 -m rentsearch.report`.
    This prints the report and saves it to `reports/<today>.md`.
 
-7. Show the full report to the user in chat, leading with the Shortlist section.
+7. Build a clean HTML dashboard from this run: Shortlist first (as cards — title, rent, BHK,
+   locality, metro distance/station, why it matched, link to the live listing), then Consider,
+   then Skip (compact list with reason), then a small filtered-out-counts-by-reason section.
+   Include the run timestamp and note whether OLX was included this run. Load the
+   `artifact-design` skill before writing it.
+
+   Before publishing, call `Artifact` with `action: "list"`, `scope: "mine"` and look for a
+   previously published artifact titled `chennai_rent_search`. If found, read it with
+   `action: "read"` first, then republish to that same `url` so this stays one
+   continuously-updated dashboard instead of a new link every run. If none exists yet,
+   publish a new one with title `chennai_rent_search` and a house-emoji favicon.
+
+8. Show the full report to the user in chat, leading with the Shortlist section, and give them
+   the artifact link. (If running headless/unattended with no one to show chat output to, the
+   artifact URL is the durable output — make sure step 7 actually completed and was not skipped.)
 
 Never contact a landlord, broker, or seller, and never submit any inquiry or application as
 part of this command — this skill only searches and analyzes.
