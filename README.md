@@ -17,7 +17,7 @@ those are macOS TCC-protected and block unattended `launchd` jobs from reading/w
 
 ## Sources
 
-All four sources are native Python adapters — no MCP server, no staging file, no browser
+All five sources are native Python adapters — no MCP server, no staging file, no browser
 automation. Each was reverse-engineered and verified against live data.
 
 **NoBroker** (`sources/nobroker.py`) — a plain `requests` call to NoBroker's own public
@@ -51,12 +51,24 @@ age, furnishing, parking, and floor are parsed out of that description with rege
 structured schema doesn't carry them as separate fields. Pagination has some overlap between
 pages (deduped within the adapter) but is otherwise usable.
 
+**SquareYards** (`sources/squareyards.py`) — also standard `schema.org` JSON-LD, no anti-bot
+fight, but split across two block types per listing: a `RentAction` block (price, dates,
+image, a locality-only address) and a separate `Apartment`/`SingleFamilyResidence` block
+(rooms, bathrooms, real GPS, a richer description) that share the same `url` — the adapter
+joins them, and falls back to parsing BHK/property-type from text when a listing has no
+matching property block (roughly a third of listings, seen live). One real gotcha found by
+testing, not assumed: SquareYards' `addressLocality` field is *always* just `"Chennai"` — the
+actual neighborhood (e.g. "Ambattur") is in `streetAddress` instead. Also, SquareYards'
+generic `/rent/property-for-rent-in-chennai` page mixes in commercial listings (offices,
+coworking spaces, warehouses) with no reliable way to filter them from the data alone — the
+adapter uses the site's own residential-only category URLs (`2-bhk-for-rent-in-chennai`,
+`independent-houses-for-rent-in-chennai`, etc.) instead of the generic page.
+
 **99acres and Housing.com are not integrated.** Both returned outright blocks (403/417/406)
 even with `curl_cffi`'s TLS impersonation — their anti-bot is stronger (likely
 behavioral/Akamai-managed-challenge, not just a TLS fingerprint check) and every working
 public scraper for them uses a real headless browser (Playwright/Selenium). Not worth the
-added fragility for a background job; revisit only if the three current sources stop being
-enough.
+added fragility for a background job; revisit only if the current sources stop being enough.
 
 ## Keep `preferences.md` and `config/areas.yaml` current
 

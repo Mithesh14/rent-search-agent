@@ -12,11 +12,12 @@ from rentsearch.sources.commonfloor import CommonFloorSource
 from rentsearch.sources.magicbricks import MagicBricksSource
 from rentsearch.sources.nobroker import NoBrokerSource
 from rentsearch.sources.olx import OlxSource
+from rentsearch.sources.squareyards import SquareYardsSource
 
 DB_PATH = "data/rentals.db"
 CONFIG_PATH = "config/areas.yaml"
 
-DEFAULT_SOURCES = [NoBrokerSource(), OlxSource(), MagicBricksSource(), CommonFloorSource()]
+DEFAULT_SOURCES = [NoBrokerSource(), OlxSource(), MagicBricksSource(), CommonFloorSource(), SquareYardsSource()]
 
 
 def load_config(path: str = CONFIG_PATH) -> dict:

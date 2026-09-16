@@ -74,8 +74,8 @@ the distance data in `config/areas.yaml`; Adyar is the farthest at ~4.85 km and 
 
 ## Sources
 
-NoBroker, OLX, MagicBricks, and CommonFloor are all native adapters (no MCP server or
-staging file needed — see `README.md` for how each one actually reaches its site).
+NoBroker, OLX, MagicBricks, CommonFloor, and SquareYards are all native adapters (no MCP
+server or staging file needed — see `README.md` for how each one actually reaches its site).
 
 ## What's not built yet (v2)
 
