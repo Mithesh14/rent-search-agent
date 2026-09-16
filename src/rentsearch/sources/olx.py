@@ -55,43 +55,35 @@ def _parse_int(value: Optional[str]) -> Optional[int]:
 class OlxSource(ListingSource):
     name = "olx"
 
-    def _fetch_page(self, query: str, max_pages: int) -> List[dict]:
-        items: List[dict] = []
-        for _ in range(max_pages):
-            params = {
-                "facet_limit": 1000,
-                "location": CHENNAI_LOCATION_ID,
-                "category": RENT_CATEGORY_ID,
-                "location_facet_limit": 40,
-                "platform": "web-desktop",
-                "pttenabled": "true",
-                "query": query,
-                "relaxedfilters": "true",
-                "size": 40,
-                "spellcheck": "true",
-                "user": "anonymous",
-            }
-            response = curl_requests.get(SEARCH_URL, params=params, impersonate="chrome124", timeout=20)
-            response.raise_for_status()
-            page_items = response.json().get("data") or []
-            if not page_items:
-                break
-            items.extend(page_items)
-            # OLX's public search API doesn't honor offset/page params for anonymous
-            # requests (verified: identical results regardless) -- one page is all we get.
-            break
-        return items
+    def _fetch_query(self, query: str) -> List[dict]:
+        # OLX's public search API doesn't honor offset/page params for anonymous requests
+        # (verified: identical results regardless) -- one request per query is all we get.
+        params = {
+            "facet_limit": 1000,
+            "location": CHENNAI_LOCATION_ID,
+            "category": RENT_CATEGORY_ID,
+            "location_facet_limit": 40,
+            "platform": "web-desktop",
+            "pttenabled": "true",
+            "query": query,
+            "relaxedfilters": "true",
+            "size": 40,
+            "spellcheck": "true",
+            "user": "anonymous",
+        }
+        response = curl_requests.get(SEARCH_URL, params=params, impersonate="chrome124", timeout=20)
+        response.raise_for_status()
+        return response.json().get("data") or []
 
     def fetch(self, config: dict) -> List[PropertyListing]:
         rent_cfg = config.get("rent", {})
         min_rent = rent_cfg.get("min", 5000)
         max_rent = rent_cfg.get("max", 25000)
-        max_pages = config.get("olx_max_pages", 1)
 
         seen_ids = set()
         listings: List[PropertyListing] = []
         for query in GENERIC_QUERIES:
-            for raw in self._fetch_page(query, max_pages):
+            for raw in self._fetch_query(query):
                 if raw.get("id") in seen_ids:
                     continue
                 seen_ids.add(raw.get("id"))

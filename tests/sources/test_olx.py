@@ -34,7 +34,7 @@ class FakeResponse:
 
 def test_fetch_maps_fields():
     source = OlxSource()
-    config = {"rent": {"min": 8000, "max": 25000}, "olx_max_pages": 1}
+    config = {"rent": {"min": 8000, "max": 25000}}
     with patch("rentsearch.sources.olx.curl_requests.get", return_value=FakeResponse({"data": [FIXTURE_ITEM]})) as mock_get:
         listings = source.fetch(config)
 
@@ -60,7 +60,7 @@ def test_fetch_maps_fields():
 def test_car_parking_count_maps_to_car():
     source = OlxSource()
     item = {**FIXTURE_ITEM, "parameters": [{"key": "carparking", "value": "1", "value_name": "1"}]}
-    config = {"rent": {"min": 8000, "max": 25000}, "olx_max_pages": 1}
+    config = {"rent": {"min": 8000, "max": 25000}}
     with patch("rentsearch.sources.olx.curl_requests.get", return_value=FakeResponse({"data": [item]})):
         listings = source.fetch(config)
     assert listings[0].parking == "car"
@@ -69,7 +69,7 @@ def test_car_parking_count_maps_to_car():
 def test_veg_only_title_detected():
     source = OlxSource()
     item = {**FIXTURE_ITEM, "title": "Flat For Rent 2BHK Only Vegetarian Family-"}
-    config = {"rent": {"min": 8000, "max": 25000}, "olx_max_pages": 1}
+    config = {"rent": {"min": 8000, "max": 25000}}
     with patch("rentsearch.sources.olx.curl_requests.get", return_value=FakeResponse({"data": [item]})):
         listings = source.fetch(config)
     assert listings[0].non_veg_allowed is False
@@ -78,7 +78,7 @@ def test_veg_only_title_detected():
 def test_rent_outside_range_is_excluded():
     source = OlxSource()
     item = {**FIXTURE_ITEM, "price": {"value": {"raw": 50000.0}}}
-    config = {"rent": {"min": 8000, "max": 25000}, "olx_max_pages": 1}
+    config = {"rent": {"min": 8000, "max": 25000}}
     with patch("rentsearch.sources.olx.curl_requests.get", return_value=FakeResponse({"data": [item]})):
         listings = source.fetch(config)
     assert listings == []
@@ -86,7 +86,7 @@ def test_rent_outside_range_is_excluded():
 
 def test_dedupes_across_generic_queries():
     source = OlxSource()
-    config = {"rent": {"min": 8000, "max": 25000}, "olx_max_pages": 1}
+    config = {"rent": {"min": 8000, "max": 25000}}
     with patch("rentsearch.sources.olx.curl_requests.get", return_value=FakeResponse({"data": [FIXTURE_ITEM]})):
         listings = source.fetch(config)
     assert len(listings) == 1
