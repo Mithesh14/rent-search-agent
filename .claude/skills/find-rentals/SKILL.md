@@ -22,10 +22,11 @@ Run these steps in order, in the project root (the `Rent agent` directory).
 3. Read `preferences.md` in full.
 
 4. For each unscored listing:
-   - If it has an `image_url`, download it (e.g. `curl -sL -o /tmp/listing_<id>.jpg
-     "<image_url>"`) and actually view it with the Read tool before judging `photo_vibe` —
-     don't guess from the title. If there's no image or the download fails, `photo_vibe` is
-     `UNKNOWN`.
+   - If it has an `image_url`, download it and actually view it with the Read tool before
+     judging `photo_vibe` — don't guess from the title. NoBroker's image host needs a
+     `Referer: https://www.nobroker.in/` header or it 403s; OLX and MagicBricks images don't:
+     `curl -sL -H "Referer: https://www.nobroker.in/" -o /tmp/listing_<id>.jpg "<image_url>"`.
+     If there's no image or the download fails, `photo_vibe` is `UNKNOWN`.
    - Evaluate the listing against `preferences.md` using its stored fields — including
      `metro_distance_km`, `nearest_metro_station`, `flood_notes`, and the photo you just
      viewed. Produce:

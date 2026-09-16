@@ -19,7 +19,7 @@ FIXTURE_ITEM = {
     "detailUrl": "/property/2-bhk-apartment-for-rent-in-guindy-chennai-for-rs-18000/abc123/detail",
     "propertyTitle": "2 BHK Flat for Rent In Guindy",
     "furnishingDesc": "Semi",
-    "originalImageUrl": "//assets.nobroker.in/sample_image.jpg",
+    "thumbnailImage": "//assets.nobroker.in/images/abc123/abc123_medium.jpg",
 }
 
 
@@ -54,7 +54,7 @@ def test_fetch_area_maps_fields_and_stops_on_empty_page():
     assert listing.parking == "car"
     assert listing.age_years == 3
     assert listing.locality == "Guindy"
-    assert listing.image_url == "https://assets.nobroker.in/sample_image.jpg"
+    assert listing.image_url == "https://assets.nobroker.in/images/abc123/abc123_medium.jpg"
     assert listing.non_veg_allowed is None
     assert mock_get.call_count == 2
 

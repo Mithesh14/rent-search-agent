@@ -20,6 +20,8 @@ PARKING_MAP = {"NONE": "none", "TWO_WHEELER": "bike", "FOUR_WHEELER": "car", "BO
 BUILDING_TYPE_MAP = {"AP": "apartment", "IH": "individual_house"}
 
 
+# `originalImageUrl` is permanently 403 from this bucket path regardless of headers (verified
+# live) -- `thumbnailImage` is the one that actually loads, and only with a Referer header.
 def _fix_image_url(raw_url: Optional[str]) -> Optional[str]:
     if not raw_url:
         return None
@@ -94,7 +96,7 @@ class NoBrokerSource(ListingSource):
             furnishing=raw.get("furnishingDesc"),
             bathrooms=raw.get("bathroom"),
             description_raw=raw.get("propertyTitle", ""),
-            image_url=_fix_image_url(raw.get("originalImageUrl")),
+            image_url=_fix_image_url(raw.get("thumbnailImage")),
             non_veg_allowed=detect_veg_only(raw.get("propertyTitle")),
         )
 
