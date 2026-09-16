@@ -1,0 +1,122 @@
+# Search parameters passed to NoBroker's search API for every target area.
+rent:
+  min: 8000
+  max: 25000
+building_types: [AP, IH]   # NoBroker's own codes: apartment, individual house
+max_pages_per_area: 5
+
+# Existing, currently-operational Chennai Metro stations near the target areas (Blue Line +
+# Green Line — both have been running for years; this is NOT the unbuilt Phase 2 network).
+# Coordinates are from OpenStreetMap's Chennai Metro-tagged station nodes, verified 2026-09-16.
+metro_stations:
+  - name: Guindy
+    lat: 13.0092746
+    lon: 80.2130846
+    status: operational
+    line: Blue
+  - name: Alandur
+    lat: 13.0042558
+    lon: 80.2014525
+    status: operational
+    line: Blue/Green interchange
+  - name: Ekkattuthangal
+    lat: 13.0169222
+    lon: 80.2054236
+    status: operational
+    line: Green
+  - name: Ashok Nagar
+    lat: 13.0354768
+    lon: 80.2111075
+    status: operational
+    line: Green
+  - name: Nanganallur Road
+    lat: 12.9998798
+    lon: 80.1940099
+    status: operational
+    line: Blue
+  - name: Saint Thomas Mount
+    lat: 12.9950000
+    lon: 80.1985820
+    status: operational
+    line: Blue/Green interchange
+  - name: Meenambakkam
+    lat: 12.9876728
+    lon: 80.1764787
+    status: operational
+    line: Blue
+  - name: Chennai Airport
+    lat: 12.9808092
+    lon: 80.1642026
+    status: operational
+    line: Blue
+
+# Target neighborhoods. lat/lon are locality centroids (OpenStreetMap Nominatim) — used both
+# as the NoBroker search anchor and as a fallback distance-to-metro reference point for
+# listings that don't carry their own coordinates (this is the normal case for OLX listings,
+# which only give a locality name, not GPS).
+#
+# flood_notes are manually researched from news coverage of the Dec 2015 Chennai floods and
+# Dec 2023 Cyclone Michaung flooding — NOT a live flood-data API (no such API exists for this
+# level of granularity). Treat these as directional leads to ask about locally, not a verdict.
+# "No specific reports found" means exactly that — it is not a claim the area is flood-safe.
+areas:
+  - name: Kotturpuram
+    lat: 13.0193703
+    lon: 80.2435512
+    flood_notes: >
+      Adyar riverside locality. Kotturpuram Housing Board flats were flooded in the Dec 2015
+      Chennai floods when the Adyar river overflowed. Elevated risk, especially for
+      ground-floor or river-facing blocks.
+  - name: Guindy
+    lat: 13.0086685
+    lon: 80.2126063
+    flood_notes: >
+      Near the Adyar river corridor. Dec 2015 coverage reports the Saidapet bridge flooding
+      cut off road access to Guindy along with Adyar/Porur/Meenambakkam, but no reports found
+      of Guindy itself being inundated. Access-disruption risk in a severe event, not
+      necessarily inundation risk.
+  - name: Adyar
+    lat: 13.0064500
+    lon: 80.2577791
+    flood_notes: >
+      Direct Adyar river frontage; one of the localities most associated with Chennai's flood
+      history. Elevated risk, especially for blocks near the river.
+  - name: Ekkatuthangal
+    lat: 13.0242453
+    lon: 80.2065506
+    flood_notes: >
+      No specific major-flooding reports found for this locality in the Dec 2015 or Dec 2023
+      coverage reviewed. Unverified — do not treat as confirmed low-risk; ask locally about
+      historical waterlogging before committing.
+  - name: Alandur
+    lat: 13.0042558
+    lon: 80.2014525
+    flood_notes: >
+      The Thillai Ganga Nagar subway in Alandur was closed due to severe waterlogging during
+      Cyclone Michaung (Dec 2023). Underpass/low-lying stretches have a recurring flooding
+      issue — check a specific listing's elevation relative to that subway.
+  - name: Ashok Nagar
+    lat: 13.0359275
+    lon: 80.2145697
+    flood_notes: >
+      Heavy waterlogging reported at Ashok Nagar junction during the Dec 2015 floods.
+      Moderate-to-elevated risk in low-lying stretches.
+  - name: Pazhavanthangal
+    lat: 12.9883524
+    lon: 80.1891324
+    flood_notes: >
+      No specific major-flooding reports found in the Dec 2015 or Dec 2023 coverage reviewed.
+      Unverified — not confirmed low-risk.
+  - name: Nanganallur
+    lat: 12.9801242
+    lon: 80.1849020
+    flood_notes: >
+      No specific major-flooding reports found for Nanganallur itself. Neighbouring low-lying
+      areas (Adambakkam, the Velachery basin) were badly hit in Dec 2023 — worth asking about
+      local drainage/elevation rather than assuming safety by proximity.
+  - name: St Thomas Mount
+    lat: 12.9950000
+    lon: 80.1985820
+    flood_notes: >
+      No specific major-flooding reports found in the Dec 2015 or Dec 2023 coverage reviewed.
+      Unverified.
